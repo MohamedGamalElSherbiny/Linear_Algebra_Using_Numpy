@@ -7,12 +7,15 @@ class SolveLinearEquation:
 
     Parameters:
     -----------
-    matrix :        list
-                    list of integers / float numbers
+    matrix :         list
+                     list of integers / float numbers
+    target_vector :  list
+                     list of integer / float numbers with the final answer of the equations
 
     Returns:
     -------
-    Numpy Matrix
+    solution:        numpy
+                     Matrix in the echelon form
 
     See also:
     --------
@@ -20,8 +23,10 @@ class SolveLinearEquation:
     https://en.wikipedia.org/wiki/Gaussian_elimination
     """
 
-    def __init__(self, matrix):
+    def __init__(self, matrix, target_vector):
         self.matrix = np.array(matrix, dtype=np.float64)
+        self.target_vector = np.array(target_vector).reshape(-1, 1)
+        self.solution = self._solve_linear_equation()
 
     def __is_square(self):
         """
@@ -118,7 +123,7 @@ class SolveLinearEquation:
         matrix[target_row, :] = matrix_copy[target_row, :] - matrix_copy[pivot_row, :]
         return matrix
 
-    def solve_linear_equation(self, target_vector):
+    def _solve_linear_equation(self):
         """
         Solves a system of linear equations using Gaussian Echelon Form
 
@@ -126,8 +131,8 @@ class SolveLinearEquation:
         -----------
         matrix :         numpy array
                          Matrix of integers / float numbers
-        target_vector :  list
-                         list of integer / float numbers with the final answer of the equations
+        target_vector :  numpy array
+                         numpy vector of integer / float numbers with the final answer of the equations
 
         Returns:
         -------
@@ -142,7 +147,7 @@ class SolveLinearEquation:
         matrix_solution = self.__matrix_properties()
         if matrix_solution:
             # To concatenate the final vector to the matrix
-            matrix = np.concatenate((self.matrix, np.array(target_vector).reshape(-1, 1)), axis=1)
+            matrix = np.concatenate((self.matrix, self.target_vector), axis=1)
             for i in range(len(matrix) - 1):
                 matrix = self.__gaussian_reduction(matrix, pivot_row=i, target_row=i + 1, pivot_element=i)
             for row in range(len(matrix)):
