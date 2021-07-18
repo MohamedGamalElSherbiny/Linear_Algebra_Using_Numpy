@@ -7,7 +7,8 @@ class SolveLinearEquation:
 
     Parameters:
     -----------
-    matrix :         list
+    matrix :         list of lists
+                     each embedded list represents a row
                      list of integers / float numbers
     target_vector :  list
                      list of integer / float numbers with the final answer of the equations
