@@ -1,26 +1,29 @@
 import numpy as np
 
-
 class LinearAlgebra:
     """
     Implements a set of Linear Algebra Functions on a given Matrix
 
     Parameters:
     -----------
-    matrix :         list of lists
-                     each embedded list represents a row
-                     list of integers / float numbers
-    target_vector :  list
-                     list of integer / float numbers with the final answer of the equations
+    matrix :             list of lists
+                         each embedded list represents a row
+                         list of integers / float numbers
+    target_vector :      list
+                         list of integer / float numbers with the final answer of the equations
+    print_properties :   boolean, optional
+                         To print the rank and the determinant of the matrix
 
     Returns:
     -------
     solution:        numpy
                      Matrix in the echelon form
     """
-    def __init__(self, matrix, target_vector):
+    def __init__(self, matrix, target_vector, print_properties=False):
         self.matrix = np.array(matrix, dtype=np.float64)
         self.target_vector = np.array(target_vector).reshape(-1, 1)
+        self.num_rows = len(self.matrix)
+        self.print_properties = print_properties
         self.solution = self._solve_linear_equation()
 
     def __is_square(self):
@@ -36,14 +39,13 @@ class LinearAlgebra:
         -------
         Boolean
         """
-        num_rows = len(self.matrix)
-        is_square_bool = True
+        # Get the number of columns in the matrix
         for row in self.matrix:
-            if num_rows != len(row):
-                is_square_bool = False
-        return is_square_bool
+            if self.num_rows == len(row):
+                return True
+            return False
 
-    def __matrix_properties(self, print_properties=True):
+    def __matrix_properties(self):
         """
         Checks if the matrix columns are independent.
 
@@ -51,8 +53,6 @@ class LinearAlgebra:
         -----------
         matrix :             numpy array
                              Matrix of integers / float numbers
-        print_properties :   boolean, optional
-                             To print the rank and the determinant of the matrix
 
         Returns:
         -------
@@ -64,12 +64,11 @@ class LinearAlgebra:
         Prints the determinant of the input matrix using np.linalg.det function
         """
         if self.__is_square():
-            num_rows = len(self.matrix)
             matrix_rank = np.linalg.matrix_rank(self.matrix)
-            if print_properties:
+            if self.print_properties:
                 print(f"The rank of the matrix is: {matrix_rank}")
-                print(f"The determinant of the matrix is: {np.linalg.det(self.matrix)}")
-            if matrix_rank == num_rows:
+                print(f"The determinant of the matrix is: {self.det()}")
+            if matrix_rank == self.num_rows:
                 return True
             else:
                 return False
@@ -150,15 +149,15 @@ class LinearAlgebra:
                 concatenated_matrix[row, :] /= concatenated_matrix[row, row]
             return concatenated_matrix
         else:
-            "There is no solution to this matrix.\nOr this matrix has infinite number of solutions."
+            return "There is no solution to this matrix.\nOr this matrix has infinite number of solutions."
 
     @staticmethod
     def __determinant(matrix):
         return matrix[0, 0] * matrix[1, 1] - matrix[0, 1] * matrix[1, 0]
 
     def __interchange_matrix(self):
-        inverted_matrix = np.array([[self.matrix[1][1], -1 * self.matrix[0][1]],
-                                    [-1 * self.matrix[1][0], self.matrix[0][0]]])
+        inverted_matrix = np.array([[self.matrix[1, 1], -1 * self.matrix[0, 1]],
+                                    [-1 * self.matrix[1, 0], self.matrix[0, 0]]])
         return inverted_matrix
 
     def inverse_matrix(self):
@@ -173,40 +172,35 @@ class LinearAlgebra:
 
     # TODO: Coding a function that generates the transpose of a 3x3 matrix
     def transpose(self):
-        transposed_matrix_list = [np.array(e) for e in zip(*self.matrix)]
+        transposed_matrix_list = [np.array(i) for i in zip(*self.matrix)]
         return np.array(transposed_matrix_list)
 
     # TODO: Coding a function that generates the matrix of minors of a 3x3 matrix
     @staticmethod
-    def minor(arr, i, j):
-        c = arr[:]
-        # Deleting the row containing the matrix minor from the original matrix copy
-        c = np.delete(c, i, axis=0)
-        # Looping on each row and deleting the column element below the minor
-        matrix = [np.delete(row, j, axis=0) for row in c]
+    def __minor(matrix, i, j):
+        matrix = np.delete(matrix, i, axis=0)
+        matrix = np.delete(matrix, j, axis=1)
         return matrix
 
     # TODO: Coding a function that generates the matrix of cofactors of a 3x3 matrix
     def det(self):
-        n = len(self.matrix)
-        if n == 1:
-            return self.matrix[0][0]
-        if n == 2:
+        if self.num_rows == 1:
+            return self.matrix[0, 0]
+        if self.num_rows == 2:
             return self.__determinant(self.matrix)
         total_sum = 0
         # looping on columns of the first row (minor values)
-        for i in range(0, n):
+        for i in range(self.num_rows):
             # Calculating the minor's corresponding cofactor matrix
-            m = self.minor(self.matrix, 0, i)
+            m = self.__minor(self.matrix, 0, i)
             # summing the product of the minor and the "signed" determinant of the cofactor
-            total_sum += ((-1) ** i) * self.matrix[0][i] * self.__determinant(m)
+            total_sum += ((-1) ** i) * self.matrix[0, i] * self.__determinant(m)
         return total_sum
 
     # TODO: Coding a function that generates the inverse of a 3x3 matrix if it exists
 
-
 if __name__ == "__main__":
     equations = [[1.5, 5.75, 2.6], [1, 1, 1], [0, 1, -1]]
     answers = [589.5, 200, -20]
-    solveLinearEquation = LinearAlgebra(equations, answers)
-    print(solveLinearEquation.solution)
+    linearAlgebra = LinearAlgebra(equations, answers, True)
+    print(linearAlgebra.solution)
