@@ -3,7 +3,7 @@ import numpy as np
 
 class LinearAlgebra:
     """
-    Solves a system of linear equations using Gaussian Echelon Form
+    Implements a set of Linear Algebra Functions on a given Matrix
 
     Parameters:
     -----------
@@ -18,12 +18,10 @@ class LinearAlgebra:
     solution:        numpy
                      Matrix in the echelon form
     """
-
     def __init__(self, matrix, target_vector):
         self.matrix = np.array(matrix, dtype=np.float64)
         self.target_vector = np.array(target_vector).reshape(-1, 1)
         self.solution = self._solve_linear_equation()
-        self.det = 0
 
     def __is_square(self):
         """
@@ -154,8 +152,9 @@ class LinearAlgebra:
         else:
             "There is no solution to this matrix.\nOr this matrix has infinite number of solutions."
 
-    def det(self):
-        self.det = self.matrix[0][0] * self.matrix[1][1] - self.matrix[0][1] * self.matrix[1][0]
+    @staticmethod
+    def __determinant(matrix):
+        return matrix[0, 0] * matrix[1, 1] - matrix[0, 1] * matrix[1, 0]
 
     def __interchange_matrix(self):
         inverted_matrix = np.array([[self.matrix[1][1], -1 * self.matrix[0][1]],
@@ -163,33 +162,48 @@ class LinearAlgebra:
         return inverted_matrix
 
     def inverse_matrix(self):
-        return (1 / self.det) * self.__interchange_matrix()
+        return (1 / self.__determinant(self.matrix)) * self.__interchange_matrix()
 
     # TODO: Coding a function that checks if a 3x3 matrix is invertible
+    def __check_invertible(self):
+        if self.det() == 0:
+            return False
+        else:
+            return True
+
     # TODO: Coding a function that generates the transpose of a 3x3 matrix
+    def transpose(self):
+        transposed_matrix_list = [np.array(e) for e in zip(*self.matrix)]
+        return np.array(transposed_matrix_list)
+
     # TODO: Coding a function that generates the matrix of minors of a 3x3 matrix
+    @staticmethod
+    def minor(arr, i, j):
+        c = arr[:]
+        # Deleting the row containing the matrix minor from the original matrix copy
+        c = np.delete(c, i, axis=0)
+        # Looping on each row and deleting the column element below the minor
+        matrix = [np.delete(row, j, axis=0) for row in c]
+        return matrix
+
     # TODO: Coding a function that generates the matrix of cofactors of a 3x3 matrix
+    def det(self):
+        n = len(self.matrix)
+        if n == 1:
+            return self.matrix[0][0]
+        if n == 2:
+            return self.__determinant(self.matrix)
+        total_sum = 0
+        # looping on columns of the first row (minor values)
+        for i in range(0, n):
+            # Calculating the minor's corresponding cofactor matrix
+            m = self.minor(self.matrix, 0, i)
+            # summing the product of the minor and the "signed" determinant of the cofactor
+            total_sum += ((-1) ** i) * self.matrix[0][i] * self.__determinant(m)
+        return total_sum
+
     # TODO: Coding a function that generates the inverse of a 3x3 matrix if it exists
 
-    # def minor(arr, i, j):
-    #     c = arr[:]
-    #     c = np.delete(c, (i), axis=0)  # deleting the row containing the matrix minor from the original matrix copy
-    #     matrix = [np.delete(row, (j), axis=0) for row in
-    #               (c)]  # Looping on each row and deleting the column element below the minor
-    #     print(matrix)
-    #     return matrix
-    #
-    # def det(arr):
-    #     n = len(arr)
-    #     if n == 1: return arr[0][0]
-    #     if n == 2: return arr[0][0] * arr[1][1] - arr[0][1] * arr[1][0]
-    #     sum = 0
-    #     for i in range(0, n):  # looping on columns of the first row (minor values)
-    #         m = minor(arr, 0, i)  # Calculating the minor's corresponding cofactor matrix
-    #         # print("minor of 0 and",i, "is:", m)
-    #         sum = sum + ((-1) ** i) * arr[0][i] * det(
-    #             m)  # summing the product of the minor and the "signed" determinant of the cofactor
-    #     return sum
 
 if __name__ == "__main__":
     equations = [[1.5, 5.75, 2.6], [1, 1, 1], [0, 1, -1]]
